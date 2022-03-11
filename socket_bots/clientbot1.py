@@ -9,9 +9,20 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((socket.gethostname(), 1234))
 
 
+def close(msg):
+    split_message = re.split(r'\s+|[,;?!.-]\s*', msg.lower())
+    name_library = ["cecilie", "stefan", "vilde", "emma", ]
+    name = set(split_message).intersection(name_library)
+    isEmpty = (len(name) == 0)
+    if isEmpty:
+        return
+    str_val = ''.join(list(map(str, name)))
+    return str_val
+
+
 def get_response(response):
     split_message = re.split(r'\s+|[,;?!.-]\s*', response.lower())
-    library = ["fight", "fish", "ski", "walk", "cry", "eat", "play", "scare", "see", "look", "sing", "work"]
+    library = ["fight", "talk", "fish", "ski", "walk", "cry", "eat", "play", "scare", "see", "look", "sing", "work"]
     verb = set(split_message).intersection(library)
     isEmpty = (len(verb) == 0)
     if isEmpty:
@@ -26,8 +37,15 @@ def reciever_for_bots():
 
 
 def cecilie():
+    username = "cecilie"
     while True:
         msg = reciever_for_bots()
+
+        if "/kick" in msg:
+            kick = close(msg)
+            if kick == username:
+                s.send("Cecilie: I will remmeber this!".encode())
+                s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
             s.send("Cecilie: You goofhead, idk what you meeeean :)".encode())
@@ -37,10 +55,16 @@ def cecilie():
 
 
 def stefan():
+    username = "stefan"
     while True:
         alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
         b = random.choices(alternatives)
         msg = reciever_for_bots()
+        if "/kick" in msg:
+            kick = close(msg)
+            if kick == username:
+                s.send("Stefan: this is why you will remain maidenless....".encode())
+                s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
             s.send("Stefan: You should really be clearer, i cant understand you".encode())
@@ -50,10 +74,16 @@ def stefan():
 
 
 def vilde():
+    username = "vilde"
     while True:
-        alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
-        b = random.choices(alternatives)
         msg = reciever_for_bots()
+
+        if "/kick" in msg:
+            kick = close(msg)
+            if kick == username:
+                s.send("I hope you sleep well >:)".encode())
+                s.close()
+
         filter_msg = get_response(msg)
         if filter_msg == "false":
             s.send("Vilde: dummy!!! i dont know what you mean!".encode())
@@ -63,8 +93,15 @@ def vilde():
 
 
 def emma():
+    username = "emma"
     while True:
         msg = reciever_for_bots()
+
+        if "/kick" in msg:
+            kick = close(msg)
+            if kick == username:
+                s.send("ROBEEERT".encode())
+                s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
             s.send("Emma: I did not understand what you said!".encode())

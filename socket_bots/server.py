@@ -4,36 +4,40 @@ import threading
 
 list_of_connections = []
 threadcount = 0
+
 def handle_client():
     while True:
             msg = input()
-            if msg == "--help":
+            if msg == "/help":
                 print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, see, look, sing, work")
+                print("to kick you have to write: /kick [person]")
+                print("to close down the chat room type /close")
+            elif msg == "/close":
+                server.close()
             else:
                 broadcast(msg)
 
 def broadcast(msg):
     for clients in list_of_connections:
-            try:
-                clients.send(msg.encode())
-                text = clients.recv(1024).decode()
-                print(text)
-            except:
-                continue
-
+        print("passing")
+        try:
+            clients.send(msg.encode())
+            text = clients.recv(1024).decode()
+            print(text)
+        except:
+            clients.close()
+            remove(clients)
 
 def remove(client):
     global threadcount
 
     if client in list_of_connections:
-        print(client)
         list_of_connections.remove(client)
 
     num_connections = len(list_of_connections)
-
+    threadcount -= 1
     print(f"numbers of connections: {num_connections}")
     print(f"numbers of threads: {threadcount}")
-
 
 def main():
     print("[starting] server is starting")
@@ -43,8 +47,8 @@ def main():
     s.listen(5)
 
     print(f"[listening] Server is listening")
-    print("for additional commands type --help")
-
+    print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, see, look, sing, work")
+    print("for additional commands type /help")
     while True:
         global threadcount
 
@@ -62,10 +66,6 @@ def main():
 
         thread1 = threading.Thread(target=handle_client)
         thread1.start()
-
-
-
-
 
 
 if __name__ == '__main__':

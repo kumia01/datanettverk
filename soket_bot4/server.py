@@ -6,7 +6,7 @@ list_of_connections = []
 list_names = []
 
 # How many clients that can connect to the server
-max_client = 4
+max_client = 5
 
 print("[starting] server is starting")
 print(f"ip address: 192.168.39.137")
@@ -20,14 +20,11 @@ server.listen(max_client)
 print(f"[listening] Server is listening")
 
 
-# function for kicking certain clients and closing off connetions from both end
+# function for kicking certain clients and closing off connections from both end
 def kick(msg):
     for names in list_names:
         if names in msg:
             client = list_of_connections[list_names.index(names)]
-            client.send("kicked".encode())
-            msg = client.recv(1024).decode()
-            broadcast(client, msg)
             client.close()
             remove(client)
 
@@ -40,6 +37,9 @@ def connections():
     # name = client.recv(1024).decode()
     # list_names.append(name)
     list_of_connections.append(client)
+    username = client.recv(2024).decode()
+    print(username)
+    list_names.append(username)
     num_connections = len(list_of_connections) - 1
     print(f"new connection established: {client}")
     print(f"numbers of connections: {num_connections}")
@@ -49,11 +49,20 @@ def broadcast(client, msg):
     for clients in list_of_connections:
         if clients != server and clients != client:
             try:
+                print(msg)
                 clients.send(msg.encode())
             except:
                 # if the socket connection is broken, we close it off
                 client.close()
                 remove(client)
+
+
+def data_splitting(data):
+    data_list = data.split('% ')
+    print(data_list)
+    msg = data_list[0]
+    user = data_list[1]
+    return msg, user
 
 
 def remove(client):
@@ -75,12 +84,11 @@ def main():
                 connections()
             else:
                 try:
-                    msg = sock.recv(1024).decode()
+                    msg = sock.recv(2024).decode()
 
-                    if "/kick" in msg:
-                        kick(msg)
                     if msg:
-                        broadcast(sock, "\n" + msg)
+                        msg, user = data_splitting(msg)
+                        broadcast(sock, "\r" + user + ": " + msg + "% " + user)
                 except:
                     remove(sock)
                     continue

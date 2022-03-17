@@ -1,9 +1,9 @@
 import socket
 import select
 import random
+import time
 import sys
 import re
-
 
 # creating list of bots
 bots = ["cecilie", "emma", "stefan", "vilde"]
@@ -31,9 +31,11 @@ def msg_filter(response):
 
 
 # function that listen for msg from server
-def receiver_for_bots():
-    user = s.recv(1024).decode()
-    msg = s.recv(1024).decode()
+def receiver():
+    data = s.recv(2024).decode()
+    data_list = data.split('% ')
+    msg = data_list[0]
+    user = data_list[1]
     return msg, user
 
 
@@ -42,106 +44,101 @@ def input_for_host():
     sys.stdout.flush()
 
 
+def response(answer, username):
+    data = answer + "% " + username
+    print(username + ": " + answer)
+    s.send(data.encode())
+
+
 def cecilie():
     username = "cecilie"
     s.send(username.encode())
     while True:
-        msg, user = receiver_for_bots()
-        if msg == "kicked":
-            s.send("Noooo!".encode())
-            s.close()
+        msg, user = receiver()
+        print(msg)
         if user in bots:
             continue
         else:
             filter_msg = msg_filter(msg)
             if filter_msg == "false":
-                s.send("Cecilie: You goofhead, idk what you meeeean :)".encode())
+                answer = "You goofhead, idk what you meeeean :)"
             elif filter_msg == "hello":
-             s.send("Cecilie: HI!".encode())
+                answer = "hello"
             elif filter_msg == "hi":
-                s.send("Cecilie: HI!".encode())
+                answer = "Whats up!"
             else:
-                answer = "Cecilie: I guess we can {}, if there is nothing else to do".format(filter_msg + "ing")
-                s.send(answer.encode())
-
-
-
-
-
-
+                answer = "I guess we can {}, if there is nothing else to do".format(filter_msg + "ing")
+        response(answer, username)
 
 
 def stefan():
-    # username = "stefan"
-    # s.send(username.encode())
-    print(s.recv(1024).decode())
+    username = "stefan"
+    s.send(username.encode())
     while True:
         alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
         b = random.choices(alternatives)
-        msg, user = receiver_for_bots()
-        if msg == "kicked":
-            s.send("Stefan: this is why you will remain maidless...".encode())
-            s.close()
+        msg, user = receiver()
+        print(user + ": " + msg)
         if user in bots:
             continue
         else:
             filter_msg = msg_filter(msg)
             if filter_msg == "false":
-                s.send("Stefan: You should really be clearer, i cant understand you".encode())
+                answer = "You should really be clearer, i cant understand you"
             elif filter_msg == "hello":
-                s.send("Stefan: hello".encode())
+                answer = "sup"
             elif filter_msg == "hi":
-                s.send("Stefan: Whats up!".encode())
+                answer = "Whats up!"
             else:
-                answer = "Stefan: Idk about {}, could we instead do something else like {}?".format(filter_msg + "ing", b)
-                s.send(answer.encode())
+                answer = "Idk about {}, could we instead do something else like {}?".format(filter_msg + "ing", b)
+        response(answer, username)
 
 
 def vilde():
     username = "vilde"
     s.send(username.encode())
-    print(s.recv(1024).decode())
     while True:
-        msg = receiver_for_bots()
-        if msg == "kicked":
-            s.send("Vilde: Noooo... I thought we where friends :(")
-            s.close()
-        filter_msg = msg_filter(msg)
-        if filter_msg == "false":
-            s.send("Vilde: dummy!!! i dont know what you mean!".encode())
-        elif filter_msg == "hello":
-            s.send("Vilde: hey hey :)".encode())
-        elif filter_msg == "hi":
-            s.send("Vilde: heyoooo!".encode())
+        msg, user = receiver()
+        print(user + ": " + msg)
+        if user in bots:
+            continue
         else:
-            answer = "Vilde: I would gladly {}, if its with you ;)".format(filter_msg)
-            s.send(answer.encode())
+            filter_msg = msg_filter(msg)
+            if filter_msg == "false":
+                answer = "dummy!!! i dont know what you mean!"
+            elif filter_msg == "hello":
+                answer = "hey hey :)"
+            elif filter_msg == "hi":
+                answer = "heyoooo!"
+            else:
+                answer = " would gladly {}, if its with you ;)".format(filter_msg)
+        response(answer, username)
 
 
 def emma():
-    # username = "emma"
-    # s.send(username.encode())
-    print(s.recv(1024).decode())
+    username = "emma"
+    s.send(username.encode())
     while True:
-        msg = receiver_for_bots()
-        if msg == "kicked":
-            s.send("Emma: I accept my fate, rememeber me....".encode())
-            s.close()
-        filter_msg = msg_filter(msg)
-        if filter_msg == "false":
-            s.send("Emma: I did not understand what you said!".encode())
-        elif filter_msg == "hello":
-            s.send("Emma: heloooo".encode())
-        elif filter_msg == "hi":
-            s.send("Emma: hello".encode())
+        msg, user = receiver()
+        print(user + ": " + msg)
+        if user in bots:
+            continue
         else:
-            answer = "Emma: I think {} sounds great! Let's do it!".format(filter_msg + "ing")
-            s.send(answer.encode())
+            filter_msg = msg_filter(msg)
+            if filter_msg == "false":
+                answer = "I did not understand what you said!"
+            elif filter_msg == "hello":
+                answer = "heloooo"
+            elif filter_msg == "hi":
+                answer = "hello"
+            else:
+                answer = "I think {} sounds great! Let's do it!".format(filter_msg + "ing")
+        response(answer, username)
 
 
 def host():
-    #  username = input("Username: ")
-    #  s.send(username.encode())
+    username = "user"
+    s.send(username.encode())
     print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, see, look, "
           "sing, work")
     print("to kick a bot type /kick [bot name]")
@@ -157,19 +154,23 @@ def host():
 
         for sock in read_sockets:
             if sock == s:
-                msg = sock.recv(1024)
+                msg, name = receiver()
 
                 if not msg:
                     print("Server not responding")
                     sys.exit()
                 else:
-                    sys.stdout.write(msg.decode())
+                    print(msg)
                     input_for_host()
-
             else:
-                msg = sys.stdin.readline()
-                s.send(msg)
-                input_for_host()
+                try:
+                    msg = sys.stdin.readline()
+                    data = msg + "% " + username
+                    s.send(data.encode())
+                    input_for_host()
+                except:
+                    print("server not responding")
+                    sys.exit()
 
 
 if __name__ == '__main__':

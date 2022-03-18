@@ -6,7 +6,7 @@ import sys
 import re
 
 # creating list of bots
-bots = ["cecilie", "emma", "stefan", "vilde"]
+bots = ["cecilie", "emma", "stefan", "vilde", "server"]
 
 # creating a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,7 +32,10 @@ def msg_filter(response):
 
 # function that listen for msg from server
 def receiver():
-    data = s.recv(2024).decode()
+    try:
+        data = s.recv(1024).decode()
+    except:
+        print("server not responding")
     data_list = data.split('% ')
     msg = data_list[0]
     user = data_list[1]
@@ -44,8 +47,11 @@ def input_for_host():
     sys.stdout.flush()
 
 
-def response(answer, username):
-    data = answer + "% " + username
+def response(answer, username, b=None):
+    if not b:
+        data = answer + "% " + username
+    else:
+        data = answer + "% " + username + "% " + b
     print(username + ": " + answer)
     s.send(data.encode())
 
@@ -55,7 +61,7 @@ def cecilie():
     s.send(username.encode())
     while True:
         msg, user = receiver()
-        print(msg)
+        print(user + ": " + msg)
         if user in bots:
             continue
         else:
@@ -68,7 +74,7 @@ def cecilie():
                 answer = "Whats up!"
             else:
                 answer = "I guess we can {}, if there is nothing else to do".format(filter_msg + "ing")
-        response(answer, username)
+            response(answer, username)
 
 
 def stefan():
@@ -76,8 +82,8 @@ def stefan():
     s.send(username.encode())
     while True:
         alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
-        b = random.choices(alternatives)
-        msg, user = receiver()
+        alt = str(random.choices(alternatives))
+        msg, user= receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -90,15 +96,15 @@ def stefan():
             elif filter_msg == "hi":
                 answer = "Whats up!"
             else:
-                answer = "Idk about {}, could we instead do something else like {}?".format(filter_msg + "ing", b)
-        response(answer, username)
+                answer = "Idk about {}, could we instead do something else like {}?".format(filter_msg + "ing", alt)
+            response(answer, username, alt)
 
 
 def vilde():
     username = "vilde"
     s.send(username.encode())
     while True:
-        msg, user = receiver()
+        msg, user= receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -112,14 +118,14 @@ def vilde():
                 answer = "heyoooo!"
             else:
                 answer = " would gladly {}, if its with you ;)".format(filter_msg)
-        response(answer, username)
+            response(answer, username)
 
 
 def emma():
     username = "emma"
     s.send(username.encode())
     while True:
-        msg, user = receiver()
+        msg, user= receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -133,7 +139,7 @@ def emma():
                 answer = "hello"
             else:
                 answer = "I think {} sounds great! Let's do it!".format(filter_msg + "ing")
-        response(answer, username)
+            response(answer, username)
 
 
 def host():
@@ -143,6 +149,7 @@ def host():
           "sing, work")
     print("to kick a bot type /kick [bot name]")
     print("/check to check number of connected clients")
+    print("write /help to see the information again")
 
     input_for_host()
 
@@ -154,7 +161,7 @@ def host():
 
         for sock in read_sockets:
             if sock == s:
-                msg, name = receiver()
+                msg, name= receiver()
 
                 if not msg:
                     print("Server not responding")
@@ -164,10 +171,18 @@ def host():
                     input_for_host()
             else:
                 try:
-                    msg = sys.stdin.readline()
-                    data = msg + "% " + username
-                    s.send(data.encode())
-                    input_for_host()
+                    msg = sys.stdin.readline().strip()
+                    if "/help" in msg:
+                        print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, "
+                              "see, look, "
+                              "sing, work")
+                        print("to kick a bot type /kick [bot name]")
+                        print("/check to check number of connected clients")
+                        input_for_host()
+                    else:
+                        data = msg + "% " + username
+                        s.send(data.encode())
+                        input_for_host()
                 except:
                     print("server not responding")
                     sys.exit()

@@ -1,5 +1,6 @@
 import socket
 import select
+import time
 
 # list of clients connected to the Server
 list_of_connections = []
@@ -24,9 +25,17 @@ print(f"[listening] Server is listening")
 def kick(msg):
     for names in list_names:
         if names in msg:
-            client = list_of_connections[list_names.index(names)]
+            client = list_of_connections[list_names.index(names) + 1]
             client.close()
+            print(client)
             remove(client)
+            num_connections = len(list_of_connections) - 1
+            broadcast(server, f"\r{names} has been kicked!% server")
+            broadcast(server, f"\rnumbers of connections: {num_connections}% server")
+# function for checking conneciton status only
+def check():
+    num_connections = len(list_of_connections) - 1
+    broadcast(server, f"\rnumbers of connections: {num_connections}% server")
 
 
 def connections():
@@ -44,12 +53,13 @@ def connections():
     print(f"new connection established: {client}")
     print(f"numbers of connections: {num_connections}")
 
-
+# function to broadcast a message to all the clients except the one where the message came from
 def broadcast(client, msg):
     for clients in list_of_connections:
         if clients != server and clients != client:
             try:
                 print(msg)
+                time.sleep(0.2)
                 clients.send(msg.encode())
             except:
                 # if the socket connection is broken, we close it off
@@ -84,11 +94,17 @@ def main():
                 connections()
             else:
                 try:
-                    msg = sock.recv(2024).decode()
 
+                    msg = sock.recv(1024).decode()
                     if msg:
-                        msg, user = data_splitting(msg)
-                        broadcast(sock, "\r" + user + ": " + msg + "% " + user)
+                        msg, user= data_splitting(msg)
+                        if "/kick" in msg:
+                            kick(msg)
+                        if "/check" in msg:
+                            check()
+                        else:
+                            broadcast(sock, "\r" + user + ": " + msg + "% " + user)
+
                 except:
                     remove(sock)
                     continue

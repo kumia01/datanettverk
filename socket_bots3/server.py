@@ -1,5 +1,6 @@
 import socket
 import threading
+import sys
 
 # list of clients connected to the server
 list_of_connections = []
@@ -12,7 +13,7 @@ print("[starting] server is starting")
 # creating socket object with TCP protocol and
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # we bind the port so that server listen to request coming from other computers on the network
-server.bind((socket.gethostname(), 1234))
+server.bind((sys.argv[1], int(sys.argv[2])))
 
 # listening for connection for max 5 clients
 server.listen(max_client)

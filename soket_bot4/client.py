@@ -1,7 +1,6 @@
 import socket
 import select
 import random
-import time
 import sys
 import re
 
@@ -48,10 +47,7 @@ def input_for_host():
 
 
 def response(answer, username, b=None):
-    if not b:
-        data = answer + "% " + username
-    else:
-        data = answer + "% " + username + "% " + b
+    data = answer + "% " + username
     print(username + ": " + answer)
     s.send(data.encode())
 
@@ -83,7 +79,7 @@ def stefan():
     while True:
         alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
         alt = str(random.choices(alternatives))
-        msg, user= receiver()
+        msg, user = receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -161,7 +157,7 @@ def host():
 
         for sock in read_sockets:
             if sock == s:
-                msg, name= receiver()
+                msg, name = receiver()
 
                 if not msg:
                     print("Server not responding")

@@ -5,7 +5,7 @@ import re
 
 # creating a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((socket.gethostname(), 1234))
+s.connect((sys.argv[2], int(sys.argv[3])))
 
 
 # function that filters the msg coming from server to simple verbs
@@ -57,18 +57,18 @@ def stefan():
         b = random.choices(alternatives)
         msg = receiver_for_bots()
         if msg == "kicked":
-            s.send("Stefan: this is why you will remain maidless...".encode())
+            answer = "Stefan: this is why you will remain maidless..."
             s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
-            s.send("Stefan: You should really be clearer, i cant understand you".encode())
+            answer = "Stefan: You should really be clearer, i cant understand you"
         elif filter_msg == "hello":
-            s.send("Stefan: hello".encode())
+            answer = "Stefan: hello"
         elif filter_msg == "hi":
-            s.send("Stefan: Whats up!".encode())
+            answer = "Stefan: Whats up!"
         else:
             answer = "Stefan: Idk about {}, could we instead do something else like {}?".format(filter_msg + "ing", b)
-            s.send(answer.encode())
+        s.send(answer.encode())
 
 
 def vilde():
@@ -78,18 +78,18 @@ def vilde():
     while True:
         msg = receiver_for_bots()
         if msg == "kicked":
-            s.send("Vilde: Noooo... I thought we where friends :(")
+            answer = "Vilde: Noooo... I thought we where friends :("
             s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
-            s.send("Vilde: dummy!!! i dont know what you mean!".encode())
+            answer = "Vilde: dummy!!! i dont know what you mean!"
         elif filter_msg == "hello":
-            s.send("Vilde: hey hey :)".encode())
+            answer = "Vilde: hey hey :)"
         elif filter_msg == "hi":
-            s.send("Vilde: heyoooo!".encode())
+            answer = "Vilde: heyoooo!"
         else:
             answer = "Vilde: I would gladly {}, if its with you ;)".format(filter_msg)
-            s.send(answer.encode())
+        s.send(answer.encode())
 
 
 def emma():
@@ -99,18 +99,18 @@ def emma():
     while True:
         msg = receiver_for_bots()
         if msg == "kicked":
-            s.send("Emma: I accept my fate, rememeber me....".encode())
+            answer = "Emma: I accept my fate, rememeber me...."
             s.close()
         filter_msg = get_response(msg)
         if filter_msg == "false":
-            s.send("Emma: I did not understand what you said!".encode())
+            answer = "Emma: I did not understand what you said!"
         elif filter_msg == "hello":
-            s.send("Emma: heloooo".encode())
+            answer = "Emma: heloooo"
         elif filter_msg == "hi":
-            s.send("Emma: hello".encode())
+            answer = "Emma: hello"
         else:
             answer = "Emma: I think {} sounds great! Let's do it!".format(filter_msg + "ing")
-            s.send(answer.encode())
+        s.send(answer.encode())
 
 
 if __name__ == '__main__':

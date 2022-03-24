@@ -43,8 +43,6 @@ def connections():
     # handshake and establishing a connection
     client, addr = server.accept()
     # adding connected client to a list
-    # name = client.recv(1024).decode()
-    # list_names.append(name)
     list_of_connections.append(client)
     username = client.recv(2024).decode()
     print(username)
@@ -112,3 +110,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

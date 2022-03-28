@@ -1,6 +1,7 @@
 import socket
 import select
 import time
+import sys
 
 # list of clients connected to the Server
 list_of_connections = []
@@ -14,6 +15,7 @@ print(f"ip address: 192.168.39.137")
 # creating socket object with TCP protocol and
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # we bind the port so that server listen to request coming from other computers on the network
+# server.bind((str(sys.argv[1]), int(sys.argv[2])))
 server.bind(("192.168.39.137", 1234))
 
 # listening for connection for max 5 clients
@@ -32,6 +34,8 @@ def kick(msg):
             num_connections = len(list_of_connections) - 1
             broadcast(server, f"\r{names} has been kicked!% server")
             broadcast(server, f"\rnumbers of connections: {num_connections}% server")
+
+
 # function for checking conneciton status only
 def check():
     num_connections = len(list_of_connections) - 1
@@ -51,12 +55,12 @@ def connections():
     print(f"new connection established: {client}")
     print(f"numbers of connections: {num_connections}")
 
+
 # function to broadcast a message to all the clients except the one where the message came from
 def broadcast(client, msg):
     for clients in list_of_connections:
         if clients != server and clients != client:
             try:
-                print(msg)
                 time.sleep(0.2)
                 clients.send(msg.encode())
             except:
@@ -93,15 +97,13 @@ def main():
             else:
                 try:
 
-                    msg = sock.recv(1024).decode()
-                    if msg:
-                        msg, user= data_splitting(msg)
-                        if "/kick" in msg:
-                            kick(msg)
-                        if "/check" in msg:
-                            check()
-                        else:
-                            broadcast(sock, "\r" + user + ": " + msg + "% " + user)
+                    msg = input("You: ")
+                    if "/kick" in msg:
+                        kick(msg)
+                    if "/check" in msg:
+                        check()
+                    else:
+                        broadcast(sock, "\r" + user + ": " + msg + "% " + user)
 
                 except:
                     remove(sock)
@@ -110,4 +112,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

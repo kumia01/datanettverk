@@ -1,5 +1,5 @@
 import socket
-import select
+import threading
 import random
 import sys
 import re
@@ -10,7 +10,7 @@ bots = ["cecilie", "emma", "stefan", "vilde", "server"]
 # creating a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    s.connect((str(sys.argv[2]), int(sys.argv[3])))
+    sock = s.connect((str(sys.argv[2]), int(sys.argv[3])))
 except:
     print("Unable to connect to server")
     sys.exit()
@@ -46,6 +46,34 @@ def input_for_host():
     sys.stdout.flush()
 
 
+def broadcast_host(username):
+    msg = sys.stdin.readline().strip()
+    if "/help" in msg:
+        print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, "
+              "see, look, "
+              "sing, work")
+        print("to kick a bot type /kick [bot name]")
+        print("/check to check number of connected clients")
+        input_for_host()
+    else:
+        data = msg + "% " + username
+        s.send(data.encode())
+        input_for_host()
+
+
+def reciever_for_host():
+    while True:
+        try:
+            data = s.recv(1024).decode()
+        except:
+            print("server not responding")
+        data_list = data.split('% ')
+        msg = data_list[0]
+        user = data_list[1]
+        print(msg)
+        input_for_host()
+
+
 def response(answer, username, b=None):
     data = answer + "% " + username
     print(username + ": " + answer)
@@ -78,7 +106,7 @@ def stefan():
     s.send(username.encode())
     while True:
         alternatives = ["eating", "coding", "hiking", "sleeping", "walking"]
-        alt = str(random.choices(alternatives))
+        alt = str(random.choices(alternatives[0]))
         msg, user = receiver()
         print(user + ": " + msg)
         if user in bots:
@@ -100,7 +128,7 @@ def vilde():
     username = "vilde"
     s.send(username.encode())
     while True:
-        msg, user= receiver()
+        msg, user = receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -121,7 +149,7 @@ def emma():
     username = "emma"
     s.send(username.encode())
     while True:
-        msg, user= receiver()
+        msg, user = receiver()
         print(user + ": " + msg)
         if user in bots:
             continue
@@ -139,7 +167,8 @@ def emma():
 
 
 def host():
-    username = "user"
+    global sock
+    username = input("username: ")
     s.send(username.encode())
     print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, see, look, "
           "sing, work")
@@ -150,38 +179,10 @@ def host():
     input_for_host()
 
     while True:
-        socket_list = [sys.stdin, s]
-
-        # getting the sockets readable inputs
-        read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
-
-        for sock in read_sockets:
-            if sock == s:
-                msg, name = receiver()
-
-                if not msg:
-                    print("Server not responding")
-                    sys.exit()
-                else:
-                    print(msg)
-                    input_for_host()
-            else:
-                try:
-                    msg = sys.stdin.readline().strip()
-                    if "/help" in msg:
-                        print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, "
-                              "see, look, "
-                              "sing, work")
-                        print("to kick a bot type /kick [bot name]")
-                        print("/check to check number of connected clients")
-                        input_for_host()
-                    else:
-                        data = msg + "% " + username
-                        s.send(data.encode())
-                        input_for_host()
-                except:
-                    print("server not responding")
-                    sys.exit()
+        thread1 = threading.Thread(target=reciever_for_host)
+        thread2 = threading.Thread(target=broadcast_host, args=username)
+        thread1.start()
+        thread2.start()
 
 
 if __name__ == '__main__':

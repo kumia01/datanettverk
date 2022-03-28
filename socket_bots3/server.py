@@ -1,11 +1,13 @@
 import socket
 import threading
 import sys
+import time
 
 # list of clients connected to the server
 list_of_connections = []
 list_names = []
-
+text_queue = []
+username = input("Username: ")
 # how many clients that can connect to the server
 max_client = 4
 
@@ -13,7 +15,8 @@ print("[starting] server is starting")
 # creating socket object with TCP protocol and
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # we bind the port so that server listen to request coming from other computers on the network
-server.bind((sys.argv[1], int(sys.argv[2])))
+# server.bind((sys.argv[1], int(sys.argv[2])))
+server.bind(("192.168.39.137", 1234))
 
 # listening for connection for max 5 clients
 server.listen(max_client)
@@ -45,14 +48,18 @@ def input_and_output():
                   "sing, work")
             print("to kick a bot type /kick [bot name]")
             print("/check to check number of connected clients")
+            print("/close so close the server")
         elif "/kick" in msg:
             kick(msg)
         elif msg == "/check":
             num_connections = len(list_of_connections)
             print(list_names)
             print(f"numbers of connections established: {num_connections}")
+        elif msg == "/close":
+            server.close()
+            sys.exit()
         else:
-            broadcast(msg)
+            msg_sender(msg)
 
 
 def connections():
@@ -67,18 +74,38 @@ def connections():
         list_of_connections.append(client)
 
 
-def broadcast(msg):
+def msg_sender(msg):
+    data = msg + "% " + username
     for clients in list_of_connections:
         try:
             # sending and receiving data from client
-            clients.send(msg.encode())
+            clients.send(data.encode())
             text = clients.recv(1024).decode()
+            broadcast(text, clients)
             # printing out the decoded message from client
-            print(text)
+            input_format(text)
         except:
             # if client won't respond we close its connection
             remove(clients)
             clients.close()
+
+
+def broadcast(msg, client):
+    for clients in list_of_connections:
+        if clients != client:
+            try:
+                clients.send(msg.encode())
+                time.sleep(0.1)
+            except:
+                remove(clients)
+                clients.close()
+
+
+def input_format(data):
+    data_list = data.split("% ")
+    msg = data_list[0]
+    usr = data_list[1]
+    print(usr + ": " + msg)
 
 
 # function to remove a client from connection list
@@ -89,13 +116,12 @@ def remove(client):
     print(f"numbers of connections: {num_connections}")
 
 
-
 def main():
+
     print("to chat with bot use any verb like: fight, fish, ski, walk, cry, eat, play, scare, see, look, "
           "sing, work")
     print("type /help for other info")
     print("/check to check number of connected clients")
-
     # establishing threading for running parallel between accepting connections and listening for input and output
     thread1 = threading.Thread(target=connections)
     thread2 = threading.Thread(target=input_and_output)

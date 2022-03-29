@@ -80,25 +80,26 @@ def msg_sender(msg):
         try:
             # sending and receiving data from client
             clients.send(data.encode())
-            text = clients.recv(1024).decode()
-            broadcast(text, clients)
-            # printing out the decoded message from client
-            input_format(text)
         except:
             # if client won't respond we close its connection
             remove(clients)
             clients.close()
+    broadcast()
 
 
-def broadcast(msg, client):
-    for clients in list_of_connections:
-        if clients != client:
-            try:
-                clients.send(msg.encode())
-                time.sleep(0.1)
-            except:
-                remove(clients)
-                clients.close()
+def broadcast():
+    # broadcasting the recevied messages
+    for client in list_of_connections:
+        msg = client.recv(1024).decode()
+        input_format(msg)
+        for clients1 in list_of_connections:
+            if clients1 != client:
+                try:
+                    clients1.send(msg.encode())
+                    time.sleep(0.1)
+                except:
+                    remove(clients1)
+                    clients1.close()
 
 
 def input_format(data):

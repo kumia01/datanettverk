@@ -10,6 +10,7 @@ s.connect((sys.argv[2], int(sys.argv[3])))
 # creating list of bots
 bots = ["cecilie", "emma", "stefan", "vilde", "server"]
 
+
 # function that filters the msg coming from server to simple verbs
 def get_response(response):
     library = ["fight", "talk", "fish", "ski", "walk", "cry", "eat", "play", "scare", "see", "look", "sing", "work",
@@ -30,9 +31,11 @@ def receiver_for_bots():
     user = data_list[1]
     return msg, user
 
+
 def response(data, username):
     msg = data + "% " + username
     s.send(msg.encode())
+
 
 def cecilie():
     username = "cecilie"
